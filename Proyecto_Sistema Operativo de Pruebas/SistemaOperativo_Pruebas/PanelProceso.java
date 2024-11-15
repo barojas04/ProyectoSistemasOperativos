@@ -15,6 +15,7 @@ public class PanelProceso extends JPanel {
         modelo.addColumn("Prioridad");
         modelo.addColumn("Tiempo Restante");
         modelo.addColumn("Memoria Requerida");
+        
 
         // Configurar la tabla
         tablaProcesos = new JTable(modelo);
