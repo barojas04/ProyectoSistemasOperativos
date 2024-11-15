@@ -38,3 +38,19 @@ public class PanelMemoria extends JPanel {
         }
     }
 }
+
+
+    // Método para actualizar el estado de un bloque de memoria (0 para libre, 1 para ocupado)
+    public void actualizarBloque(int indice, boolean ocupado) {
+        if (indice >= 0 && indice < bloquesMemoria.size()) {
+            bloquesMemoria.get(indice).setBackground(ocupado ? Color.RED : Color.GREEN);
+        }
+    }
+
+    // Método para limpiar la memoria (marcar todos los bloques como libres)
+    public void limpiarMemoria() {
+        for (JPanel bloque : bloquesMemoria) {
+            bloque.setBackground(Color.GREEN);
+        }
+    }
+}
