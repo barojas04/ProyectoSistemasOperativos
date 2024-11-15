@@ -1,28 +1,50 @@
 import java.util.LinkedList;
 import java.util.Queue;
 
-class Planificador {
-    private Queue<Proceso> colaTiempoReal = new LinkedList<>();
-    private Queue<Proceso> colaPrioridad1 = new LinkedList<>();
-    private Queue<Proceso> colaPrioridad2 = new LinkedList<>();
-    private Queue<Proceso> colaPrioridad3 = new LinkedList<>();
+import java.util.LinkedList;
+import java.util.Queue;
 
-    @SuppressWarnings("unused")
-    private int memoriaDisponible = 2048; // Memoria total en MB
+public class Planificador {
+    private Queue<Proceso> colaTiempoReal;
+    private Queue<Proceso> colaPrioridad1;
+    private Queue<Proceso> colaPrioridad2;
+    private Queue<Proceso> colaPrioridad3;
+    private int memoriaDisponible;
+    private int impresorasDisponibles;
+    private int escaneresDisponibles;
+    private Memoria memoria;
+    private Recurso recursos;
+
+    public Planificador(int memoriaTotal, int impresorasTotales, int escaneresTotales) {
+        this.colaTiempoReal = new LinkedList<>();
+        this.colaPrioridad1 = new LinkedList<>();
+        this.colaPrioridad2 = new LinkedList<>();
+        this.colaPrioridad3 = new LinkedList<>();
+        this.memoriaDisponible = memoriaTotal;
+        this.impresorasDisponibles = impresorasTotales;
+        this.escaneresDisponibles = escaneresTotales;
+        this.memoria = new Memoria(memoriaTotal);
+        this.recursos = new Recurso(impresorasTotales, escaneresTotales);
+    }
 
     public void agregarProceso(Proceso proceso) {
-        if (proceso.prioridad == 0) {
-            colaTiempoReal.add(proceso);
-        } else if (proceso.prioridad == 1) {
-            colaPrioridad1.add(proceso);
-        } else if (proceso.prioridad == 2) {
-            colaPrioridad2.add(proceso);
-        } else {
-            colaPrioridad3.add(proceso);
+        switch(proceso.getPrioridad()) {
+            case 0:
+                colaTiempoReal.add(proceso);
+                break;
+            case 1:
+                colaPrioridad1.add(proceso);
+                break;
+            case 2:
+                colaPrioridad2.add(proceso);
+                break;
+            case 3:
+                colaPrioridad3.add(proceso);
+                break;
         }
     }
 
-    public void ejecutar() {
+    public void ejecutarProcesos() {
         while (!colaTiempoReal.isEmpty() || !colaPrioridad1.isEmpty() || !colaPrioridad2.isEmpty() || !colaPrioridad3.isEmpty()) {
             if (!colaTiempoReal.isEmpty()) {
                 ejecutarProceso(colaTiempoReal.poll());
@@ -37,20 +59,22 @@ class Planificador {
     }
 
     private void ejecutarProceso(Proceso proceso) {
-        // Simulación de la ejecución del proceso
-        System.out.println("Ejecutando proceso ID: " + proceso.id);
-        // Aquí agregar lógica para actualizar recursos, tiempo restante, y cambiar colas si es necesario
-    }
-
-    public static void main(String[] args) {
-        Planificador planificador = new Planificador();
-
-        // Agregar algunos procesos de ejemplo
-        planificador.agregarProceso(new Proceso(1, 0, 0, 1, 64, 0, 0, 0, 0));
-        planificador.agregarProceso(new Proceso(2, 1, 1, 2, 128, 1, 0, 0, 1));
-        planificador.agregarProceso(new Proceso(3, 2, 3, 6, 128, 1, 0, 1, 2));
-
-        // Iniciar la simulación del planificador
-        planificador.ejecutar();
+        if (memoria.asignarMemoria(proceso.getMemoriaRequerida()) && recursos.asignarRecursos(proceso.getImpresorasNecesarias(), proceso.getEscaneresNecesarios())) {
+            // Simular ejecución del proceso (por ejemplo, reducir el tiempo de CPU restante)
+            while (proceso.getTiempoCPURestante() > 0) {
+                proceso.actualizarTiempoCPU(1); // Supongamos que cada iteración representa un ciclo de CPU
+            }
+            // Liberar recursos y memoria al finalizar el proceso
+            memoria.liberarMemoria(proceso.getId());
+            recursos.liberarRecursos(proceso.getImpresorasNecesarias(), proceso.getEscaneresNecesarios());
+        } else {
+            // Reasignar el proceso a una cola de menor prioridad si no se pudieron asignar recursos
+            if (proceso.getPrioridad() < 3) {
+                proceso.setPrioridad(proceso.getPrioridad() + 1);
+                agregarProceso(proceso);
+            } else {
+                // Manejar el caso en que no se pueda reasignar a una cola de menor prioridad
+            }
+        }
     }
 }
